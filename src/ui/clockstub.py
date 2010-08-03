@@ -9,7 +9,17 @@ from PyQt4.QtSvg import QGraphicsSvgItem
 from Ui_clock import Ui_MainWindow
 from configstub import configWindow
 from PyQt4.QtCore import pyqtSignature
-    
+import os.path
+
+def get_default_theme_dir():
+    import platform
+    import re
+    # it is actually the hostname, but it should match normally :-)
+    if re.match("Nokia-N[0-9]{3}.*", platform.node()):
+        return os.path.join(os.path.expanduser("~"), "MyDocs", "Nclocktheme")
+    # default linux path
+    return os.path.join(os.path.expanduser("~"), ".config", "nclock", "themes")
+
 class MainWindow(QMainWindow, Ui_MainWindow):
     """
     Class documentation goes here.
@@ -33,7 +43,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
      
         
     def setDefaults(self):    
-        self.sysThemeDir="/home/opt/nclock/theme/"
+        self.sysThemeDir=os.path.join(os.path.dirname(__file__), os.path.pardir, "theme")
         self.themeDir=""
         self.drop="clock-drop-shadow.svg"
         self.face="clock-face.svg"
@@ -75,36 +85,38 @@ class MainWindow(QMainWindow, Ui_MainWindow):
     def loadTheme(self):
  
         #Check to see if files in directory stored in QConfig exists
-        self.themeDir=self.config[1]+"/"
+        self.themeDir=unicode(self.config[1])
         try:
-            f=open (self.themeDir+self.face)      
-        except :
+            f=open(os.path.join(self.themeDir, unicode(self.face)))
+        except (OSError, IOError), e:
                 reply = QMessageBox.question(self, 'Message',"No Theme files  found,load default theme? No to Exit", QMessageBox.Yes, QMessageBox.No)
                 if reply==QMessageBox.Yes :self.themeDir=self.sysThemeDir
                 else :    exit()
         #Initialize the Graphics Scene, Graphicsview is setup in QtDesigner UI,do not convert to a loop
-        
-        self.svgDrop=QGraphicsSvgItem(self.themeDir+self.drop)
+        def path(suffix):
+            return os.path.join(self.themeDir,suffix)
+
+        self.svgDrop=QGraphicsSvgItem(path(self.drop))
         renderer=self.svgDrop.renderer()
         self.svgDrop.setZValue(1)
         self.scene.addItem(self.svgDrop)
         
-        self.svgFace=QGraphicsSvgItem(self.themeDir+self.face)
+        self.svgFace=QGraphicsSvgItem(path(self.face))
         renderer=self.svgFace.renderer()
         self.svgFace.setZValue(2)
         self.scene.addItem(self.svgFace)
         
-        self.svgShadow=QGraphicsSvgItem(self.themeDir+self.shadow)
+        self.svgShadow=QGraphicsSvgItem(path(self.shadow))
         renderer=self.svgShadow.renderer()
         self.svgShadow.setZValue(4)
         self.scene.addItem(self.svgShadow)
         
-        self.svgMarks=QGraphicsSvgItem(self.themeDir+self.marks)
+        self.svgMarks=QGraphicsSvgItem(path(self.marks))
         renderer=self.svgMarks.renderer()
         self.svgMarks.setZValue(5)
         self.scene.addItem(self.svgMarks)
         
-        self.svgFrame=QGraphicsSvgItem(self.themeDir+self.frame)
+        self.svgFrame=QGraphicsSvgItem(path(self.frame))
         renderer=self.svgFrame.renderer()
         self.svgFrame.setZValue(6)
         self.scene.addItem(self.svgFrame)
@@ -118,7 +130,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.scene.setSceneRect(0, 0,self.sceneWidth, self.sceneHeight)
  
     #===Load the Hour hand and scale the viewport to its size===========
-        self.svgHour=QGraphicsSvgItem(self.themeDir+self.hourHand)
+        self.svgHour=QGraphicsSvgItem(path(self.hourHand))
         self.renderer=self.svgHour.renderer()
         self.rect=self.svgHour.boundingRect()
         self.svgRect.setWidth(self.rect.width())
@@ -130,7 +142,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.scene.addItem(self.svgHour)
         
         #===Load the Minute hand and scale the viewport to its size===========
-        self.svgMinute=QGraphicsSvgItem(self.themeDir+self.minuteHand)
+        self.svgMinute=QGraphicsSvgItem(path(self.minuteHand))
         self.renderer=self.svgMinute.renderer()
         self.rect=self.svgMinute.boundingRect()
         self.svgRect.setWidth(self.rect.width())
@@ -142,7 +154,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.scene.addItem(self.svgMinute)
         
         #===Load the Seconds Hand and scale the viewport to its size===========
-        self.svgSecond=QGraphicsSvgItem(self.themeDir+self.secondsHand)
+        self.svgSecond=QGraphicsSvgItem(path(self.secondsHand))
         self.renderer=self.svgSecond.renderer()
         self.rect=self.svgSecond.boundingRect()
         self.svgRect.setWidth(self.rect.width())
@@ -156,11 +168,11 @@ class MainWindow(QMainWindow, Ui_MainWindow):
          #Add the Glass as the top layer
         self.fileExist=1
         try:
-                f=open (self.themeDir+"clock-glass.svg")
+                f=open (path("clock-glass.svg"))
         except :
                 self.fileExist=0
         if self.fileExist==1:
-                self.svgItem=QGraphicsSvgItem(self.themeDir+self.glass)
+                self.svgItem=QGraphicsSvgItem(path(self.glass))
                 renderer=self.svgItem.renderer()
                 self.svgItem.setZValue(10)
                 self.scene.addItem(self.svgItem)
@@ -332,10 +344,16 @@ class MainWindow(QMainWindow, Ui_MainWindow):
     def readConfig(self):
         #read the config file  from QSettings
         self.settings=QSettings("AcaciaClose", "ncalc")
-        if self.settings.contains("clockType")==1:self.config[0]=self.settings.value("clockType").toString()
-        else :self.settings.setValue("clockType", "Auto")
-        if self.settings.contains("themeName")==1:self.config[1]=self.settings.value("themeName").toString()
-        else:self.settings.setValue("themeName", "/home/user/MyDocs/Nclocktheme")
-        if self.settings.contains("ecoTimOut")==1:self.config[2]=self.settings.value("ecoTimout").toString()
-        else: self.settings.setValue("ecoTimOut","15" )
+        if self.settings.contains("clockType") == 1:
+            self.config[0]=self.settings.value("clockType").toString()
+        else:
+            self.settings.setValue("clockType", "Auto")
+        if self.settings.contains("themeName") == 1:
+            self.config[1]=self.settings.value("themeName").toString()
+        else:
+            self.settings.setValue("themeName", get_default_theme_dir())
+        if self.settings.contains("ecoTimOut") == 1:
+            self.config[2]=self.settings.value("ecoTimout").toString()
+        else: 
+            self.settings.setValue("ecoTimOut","15" )
         
