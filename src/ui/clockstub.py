@@ -40,7 +40,6 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.hideOptions()
         self.configWin=configWindow(self)
         self.connect(self.configWin, SIGNAL("window closed"), self.config_window_closed)
-     
         
     def setDefaults(self):    
         self.sysThemeDir=os.path.join(os.path.dirname(__file__), os.path.pardir, "theme")
@@ -305,10 +304,10 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             self.minTimerType=5000
             self.calibrateTime()
         elif self.config[0]=="Quartz":
-                 self.secTimerType=1000
-                 self.secTimerBeat=6
-                 self.minTimerType=10000
-                 self.calibrateTime()
+            self.secTimerType=1000
+            self.secTimerBeat=6
+            self.minTimerType=10000
+            self.calibrateTime()
         elif self.config[0]=="Eco":
             self.secTimer.stop()
             self.calibrateTimer.stop()
@@ -337,13 +336,15 @@ class MainWindow(QMainWindow, Ui_MainWindow):
     def mousePressEvent(self, event):
         #Reimplenents QMainWindow's mouse press event handler
         self.mousePressPos = QPoint()
-        if self.fullScreen==0: self.showOptions()
-        else: self.hideOptions()
+        if self.fullScreen == 0:
+            self.showOptions()
+        else:
+            self.hideOptions()
         event.accept()
         
     def readConfig(self):
         #read the config file  from QSettings
-        self.settings=QSettings("AcaciaClose", "ncalc")
+        self.settings=QSettings("nclock", "nclock")
         if self.settings.contains("clockType") == 1:
             self.config[0]=self.settings.value("clockType").toString()
         else:
