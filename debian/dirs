@@ -1,0 +1,9 @@
+opt/nclock/
+opt/nclock/theme/
+opt/nclock/ui/
+usr/share/applications/hildon/
+usr/share/dbus-1/services/
+usr/share/icons/hicolor/128x128/hildon/
+usr/share/icons/hicolor/48x48/hildon/
+usr/share/icons/hicolor/64x64/hildon/
+usr/share/icons/hicolor/scalable/hildon/

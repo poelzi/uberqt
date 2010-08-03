@@ -1,0 +1,176 @@
+#!/usr/bin/make -f
+# -*- makefile -*-
+# Sample debian/rules that uses debhelper.
+# This file was originally written by Joey Hess and Craig Small.
+# As a special exception, when this file is copied by dh-make into a
+# dh-make output file, you may use that output file without restriction.
+# This special exception was added by Craig Small in version 0.37 of dh-make.
+
+# Uncomment this to turn on verbose mode.
+#export DH_VERBOSE=1
+
+CFLAGS = -Wall -g
+
+ifneq (,$(findstring noopt,$(DEB_BUILD_OPTIONS)))
+	CFLAGS += -O0
+else
+	CFLAGS += -O2
+endif
+
+configure: configure-stamp
+configure-stamp:
+	dh_testdir
+	# Add here commands to configure the package.
+
+	touch configure-stamp
+
+build: build-stamp
+
+build-stamp: configure-stamp
+	dh_testdir
+	touch build-stamp
+
+clean:
+	dh_testdir
+	dh_testroot
+	rm -f build-stamp configure-stamp
+	dh_clean
+
+install: build
+	dh_testdir
+	dh_testroot
+	dh_clean -k
+	dh_installdirs
+
+	# ======================================================
+	#$(MAKE) DESTDIR="$(CURDIR)/debian/nclock" install
+	mkdir -p "$(CURDIR)/debian/nclock"
+
+#	mkdir -p "$(CURDIR)/debian/nclock/usr/share/icons/hicolor/128x128/hildon/"
+	cp -a "src/usr/share/icons/hicolor/128x128/hildon/nclock128.png" "$(CURDIR)/debian/nclock/usr/share/icons/hicolor/128x128/hildon/nclock128.png"
+	mkdir -p "$(CURDIR)/debian/nclock/opt/nclock/theme/"
+	cp -a "src/opt/nclock/theme/.directory" "$(CURDIR)/debian/nclock/opt/nclock/theme/.directory"
+	mkdir -p "$(CURDIR)/debian/nclock/opt/nclock/theme/"
+	cp -a "src/opt/nclock/theme/clock-drop-shadow.svg" "$(CURDIR)/debian/nclock/opt/nclock/theme/clock-drop-shadow.svg"
+	mkdir -p "$(CURDIR)/debian/nclock/opt/nclock/theme/"
+	cp -a "src/opt/nclock/theme/clock-face-shadow.svg" "$(CURDIR)/debian/nclock/opt/nclock/theme/clock-face-shadow.svg"
+	mkdir -p "$(CURDIR)/debian/nclock/opt/nclock/theme/"
+	cp -a "src/opt/nclock/theme/clock-face.svg" "$(CURDIR)/debian/nclock/opt/nclock/theme/clock-face.svg"
+	mkdir -p "$(CURDIR)/debian/nclock/opt/nclock/theme/"
+	cp -a "src/opt/nclock/theme/clock-frame.svg" "$(CURDIR)/debian/nclock/opt/nclock/theme/clock-frame.svg"
+	mkdir -p "$(CURDIR)/debian/nclock/opt/nclock/theme/"
+	cp -a "src/opt/nclock/theme/clock-glass.svg" "$(CURDIR)/debian/nclock/opt/nclock/theme/clock-glass.svg"
+	mkdir -p "$(CURDIR)/debian/nclock/opt/nclock/theme/"
+	cp -a "src/opt/nclock/theme/clock-hour-hand-shadow.svg" "$(CURDIR)/debian/nclock/opt/nclock/theme/clock-hour-hand-shadow.svg"
+	mkdir -p "$(CURDIR)/debian/nclock/opt/nclock/theme/"
+	cp -a "src/opt/nclock/theme/clock-hour-hand.svg" "$(CURDIR)/debian/nclock/opt/nclock/theme/clock-hour-hand.svg"
+	mkdir -p "$(CURDIR)/debian/nclock/opt/nclock/theme/"
+	cp -a "src/opt/nclock/theme/clock-marks.svg" "$(CURDIR)/debian/nclock/opt/nclock/theme/clock-marks.svg"
+	mkdir -p "$(CURDIR)/debian/nclock/opt/nclock/theme/"
+	cp -a "src/opt/nclock/theme/clock-minute-hand-shadow.svg" "$(CURDIR)/debian/nclock/opt/nclock/theme/clock-minute-hand-shadow.svg"
+	mkdir -p "$(CURDIR)/debian/nclock/opt/nclock/theme/"
+	cp -a "src/opt/nclock/theme/clock-minute-hand.svg" "$(CURDIR)/debian/nclock/opt/nclock/theme/clock-minute-hand.svg"
+	mkdir -p "$(CURDIR)/debian/nclock/opt/nclock/theme/"
+	cp -a "src/opt/nclock/theme/clock-second-hand-shadow.svg" "$(CURDIR)/debian/nclock/opt/nclock/theme/clock-second-hand-shadow.svg"
+	mkdir -p "$(CURDIR)/debian/nclock/opt/nclock/theme/"
+	cp -a "src/opt/nclock/theme/clock-second-hand.svg" "$(CURDIR)/debian/nclock/opt/nclock/theme/clock-second-hand.svg"
+	mkdir -p "$(CURDIR)/debian/nclock/opt/nclock/ui/"
+	cp -a "src/opt/nclock/ui/Ui_calc.py" "$(CURDIR)/debian/nclock/opt/nclock/ui/Ui_calc.py"
+	mkdir -p "$(CURDIR)/debian/nclock/opt/nclock/ui/"
+	cp -a "src/opt/nclock/ui/Ui_calc.pyc" "$(CURDIR)/debian/nclock/opt/nclock/ui/Ui_calc.pyc"
+	mkdir -p "$(CURDIR)/debian/nclock/opt/nclock/ui/"
+	cp -a "src/opt/nclock/ui/Ui_calc.pyo" "$(CURDIR)/debian/nclock/opt/nclock/ui/Ui_calc.pyo"
+	mkdir -p "$(CURDIR)/debian/nclock/opt/nclock/ui/"
+	cp -a "src/opt/nclock/ui/Ui_clock.py" "$(CURDIR)/debian/nclock/opt/nclock/ui/Ui_clock.py"
+	mkdir -p "$(CURDIR)/debian/nclock/opt/nclock/ui/"
+	cp -a "src/opt/nclock/ui/Ui_clock.pyc" "$(CURDIR)/debian/nclock/opt/nclock/ui/Ui_clock.pyc"
+	mkdir -p "$(CURDIR)/debian/nclock/opt/nclock/ui/"
+	cp -a "src/opt/nclock/ui/Ui_clock.pyo" "$(CURDIR)/debian/nclock/opt/nclock/ui/Ui_clock.pyo"
+	mkdir -p "$(CURDIR)/debian/nclock/opt/nclock/ui/"
+	cp -a "src/opt/nclock/ui/Ui_config.py" "$(CURDIR)/debian/nclock/opt/nclock/ui/Ui_config.py"
+	mkdir -p "$(CURDIR)/debian/nclock/opt/nclock/ui/"
+	cp -a "src/opt/nclock/ui/Ui_config.pyc" "$(CURDIR)/debian/nclock/opt/nclock/ui/Ui_config.pyc"
+	mkdir -p "$(CURDIR)/debian/nclock/opt/nclock/ui/"
+	cp -a "src/opt/nclock/ui/Ui_config.pyo" "$(CURDIR)/debian/nclock/opt/nclock/ui/Ui_config.pyo"
+	mkdir -p "$(CURDIR)/debian/nclock/opt/nclock/ui/"
+	cp -a "src/opt/nclock/ui/__init__.py" "$(CURDIR)/debian/nclock/opt/nclock/ui/__init__.py"
+	mkdir -p "$(CURDIR)/debian/nclock/opt/nclock/ui/"
+	cp -a "src/opt/nclock/ui/__init__.pyc" "$(CURDIR)/debian/nclock/opt/nclock/ui/__init__.pyc"
+	mkdir -p "$(CURDIR)/debian/nclock/opt/nclock/ui/"
+	cp -a "src/opt/nclock/ui/__init__.pyo" "$(CURDIR)/debian/nclock/opt/nclock/ui/__init__.pyo"
+	mkdir -p "$(CURDIR)/debian/nclock/opt/nclock/ui/"
+	cp -a "src/opt/nclock/ui/clockstub.py" "$(CURDIR)/debian/nclock/opt/nclock/ui/clockstub.py"
+	mkdir -p "$(CURDIR)/debian/nclock/opt/nclock/ui/"
+	cp -a "src/opt/nclock/ui/clockstub.py2" "$(CURDIR)/debian/nclock/opt/nclock/ui/clockstub.py2"
+	mkdir -p "$(CURDIR)/debian/nclock/opt/nclock/ui/"
+	cp -a "src/opt/nclock/ui/clockstub.pyc" "$(CURDIR)/debian/nclock/opt/nclock/ui/clockstub.pyc"
+	mkdir -p "$(CURDIR)/debian/nclock/opt/nclock/ui/"
+	cp -a "src/opt/nclock/ui/clockstub.pyo" "$(CURDIR)/debian/nclock/opt/nclock/ui/clockstub.pyo"
+	mkdir -p "$(CURDIR)/debian/nclock/opt/nclock/ui/"
+	cp -a "src/opt/nclock/ui/clockstub1.py" "$(CURDIR)/debian/nclock/opt/nclock/ui/clockstub1.py"
+	mkdir -p "$(CURDIR)/debian/nclock/opt/nclock/ui/"
+	cp -a "src/opt/nclock/ui/config.py" "$(CURDIR)/debian/nclock/opt/nclock/ui/config.py"
+	mkdir -p "$(CURDIR)/debian/nclock/opt/nclock/ui/"
+	cp -a "src/opt/nclock/ui/configstub.py" "$(CURDIR)/debian/nclock/opt/nclock/ui/configstub.py"
+	mkdir -p "$(CURDIR)/debian/nclock/opt/nclock/ui/"
+	cp -a "src/opt/nclock/ui/configstub.pyc" "$(CURDIR)/debian/nclock/opt/nclock/ui/configstub.pyc"
+	mkdir -p "$(CURDIR)/debian/nclock/opt/nclock/ui/"
+	cp -a "src/opt/nclock/ui/configstub.pyo" "$(CURDIR)/debian/nclock/opt/nclock/ui/configstub.pyo"
+	mkdir -p "$(CURDIR)/debian/nclock/opt/nclock/ui/"
+	cp -a "src/opt/nclock/ui/mainwindow.pyc" "$(CURDIR)/debian/nclock/opt/nclock/ui/mainwindow.pyc"
+	mkdir -p "$(CURDIR)/debian/nclock/usr/share/icons/hicolor/48x48/hildon/"
+	cp -a "src/usr/share/icons/hicolor/48x48/hildon/nclock48.png" "$(CURDIR)/debian/nclock/usr/share/icons/hicolor/48x48/hildon/nclock48.png"
+	mkdir -p "$(CURDIR)/debian/nclock/usr/share/dbus-1/services/"
+	cp -a "src/usr/share/dbus-1/services/nclock.service" "$(CURDIR)/debian/nclock/usr/share/dbus-1/services/nclock.service"
+	mkdir -p "$(CURDIR)/debian/nclock/usr/share/icons/hicolor/64x64/hildon/"
+	cp -a "src/usr/share/icons/hicolor/64x64/hildon/nclock64.png" "$(CURDIR)/debian/nclock/usr/share/icons/hicolor/64x64/hildon/nclock64.png"
+	mkdir -p "$(CURDIR)/debian/nclock/usr/share/applications/hildon/"
+	cp -a "src/usr/share/applications/hildon/nclock.desktop" "$(CURDIR)/debian/nclock/usr/share/applications/hildon/nclock.desktop"
+	mkdir -p "$(CURDIR)/debian/nclock/usr/share/icons/hicolor/scalable/hildon/"
+	cp -a "src/usr/share/icons/hicolor/scalable/hildon/nclock128.png" "$(CURDIR)/debian/nclock/usr/share/icons/hicolor/scalable/hildon/nclock128.png"
+	mkdir -p "$(CURDIR)/debian/nclock/opt/nclock/"
+	cp -a "src/opt/nclock/customui_rc.py" "$(CURDIR)/debian/nclock/opt/nclock/customui_rc.py"
+	mkdir -p "$(CURDIR)/debian/nclock/opt/nclock/"
+	cp -a "src/opt/nclock/customui_rc.pyo" "$(CURDIR)/debian/nclock/opt/nclock/customui_rc.pyo"
+	mkdir -p "$(CURDIR)/debian/nclock/opt/nclock/"
+	cp -a "src/opt/nclock/nclock.py" "$(CURDIR)/debian/nclock/opt/nclock/nclock.py"
+
+	# ======================================================
+
+# Build architecture-independent files here.
+binary-indep: build install
+# We have nothing to do by default.
+
+# Build architecture-dependent files here.
+binary-arch: build install
+	dh_testdir
+	dh_testroot
+	dh_installchangelogs debian/changelog
+	dh_installdocs
+	dh_installexamples
+#	dh_install
+#	dh_installmenu
+#	dh_installdebconf
+#	dh_installlogrotate
+#	dh_installemacsen
+#	dh_installpam
+#	dh_installmime
+#	dh_python
+#	dh_installinit
+#	dh_installcron
+#	dh_installinfo
+	dh_installman
+	dh_link
+	dh_strip
+	dh_compress
+	dh_fixperms
+#	dh_perl
+#	dh_makeshlibs
+	dh_installdeb
+	dh_shlibdeps
+	dh_gencontrol
+	dh_md5sums
+	dh_builddeb
+
+binary: binary-indep binary-arch
+.PHONY: build clean binary-indep binary-arch binary install configure

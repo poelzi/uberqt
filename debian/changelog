@@ -1,0 +1,5 @@
+nclock (0.5.1-5) stable; urgency=low
+
+  New Config Screen, Eco Mode and ability to load themes via file dialog
+
+ -- Mike C <mcychoy@gmail.com>  Mon, 12 Apr 2010 14:30:13 +0000

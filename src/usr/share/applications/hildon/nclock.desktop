@@ -1,0 +1,12 @@
+[Desktop Entry]
+Version=1.0.0
+Encoding=UTF-8
+Name=nclock	
+Exec=/opt/nclock/nclock.py
+Icon=nclock128
+X-Icon-path=/usr/share/icons
+X-Window-Icon=nclock128
+Type=Application
+#X-Osso-Service=com.nokia.ncalc	
+X-Osso-Type=application/x-executable
+StartupWMClass=nclock

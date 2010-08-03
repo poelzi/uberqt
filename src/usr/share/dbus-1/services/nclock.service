@@ -1,0 +1,4 @@
+[D-BUS Service]
+Name=com.nokia.nclock	
+Exec=/opt/nclock/nclock.py
+
