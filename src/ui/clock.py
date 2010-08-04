@@ -7,7 +7,7 @@ from PyQt4.QtCore  import QSettings, SIGNAL, QBasicTimer, QTimer,QTime,  QRect, 
 from PyQt4.QtGui import QMainWindow, QGraphicsScene, QTransform, QMessageBox
 from PyQt4.QtSvg import QGraphicsSvgItem 
 from Ui_clock import Ui_MainWindow
-from configstub import configWindow
+from config import configWindow
 from PyQt4.QtCore import pyqtSignature
 import os.path
 
@@ -38,12 +38,14 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.setClockType()
   
         self.hideOptions()
-        self.configWin=configWindow(self)
+        self.configWin=configWindow(self, self.settings)
+        self.configWin.show()
         self.connect(self.configWin, SIGNAL("window closed"), self.config_window_closed)
         
     def setDefaults(self):    
         self.sysThemeDir=os.path.join(os.path.dirname(__file__), os.path.pardir, "theme")
         self.themeDir=""
+        self.themeName=""
         self.drop="clock-drop-shadow.svg"
         self.face="clock-face.svg"
         self.shadow="clock-face-shadow.svg"
@@ -53,7 +55,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.minuteHand="clock-minute-hand.svg"
         self.secondsHand="clock-second-hand.svg"
         self.glass="clock-glass.svg"
-        self.config=["Auto","SBB", "15"]
+        self.config={}
    
      #Variables that keep track of the angle of the hands, and  Time
         self.secTimer = QBasicTimer()
@@ -84,7 +86,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
     def loadTheme(self):
  
         #Check to see if files in directory stored in QConfig exists
-        self.themeDir=unicode(self.config[1])
+        self.themeDir=unicode(self.config["themeDir"])
         try:
             f=open(os.path.join(self.themeDir, unicode(self.face)))
         except (OSError, IOError), e:
@@ -93,7 +95,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
                 else :    exit()
         #Initialize the Graphics Scene, Graphicsview is setup in QtDesigner UI,do not convert to a loop
         def path(suffix):
-            return os.path.join(self.themeDir,suffix)
+            return os.path.join(self.themeDir, self.themeName ,suffix)
 
         self.svgDrop=QGraphicsSvgItem(path(self.drop))
         renderer=self.svgDrop.renderer()
@@ -191,7 +193,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         #set up the Qt Seconds Timers using lightweight QBasic timer
         self.secTimer.start(self.secTimerType, self)
         #set up the Qt Minute Timer every 5 secs for Auto,10 seconds for Quartz,60 secs for Eco
-        if self.config[0]=="Eco":
+        if self.config["clockType"]=="Eco":
                 self.connect(self.syncTimer, SIGNAL("timeout()"), self.startMin)
                 self.time = QTime.currentTime()
                 self.syncTimer.setSingleShot(1)
@@ -215,8 +217,10 @@ class MainWindow(QMainWindow, Ui_MainWindow):
          #set up the ecoTimer, single shot timer
         self.connect(self.ecoTimer, SIGNAL("timeout()"), self.ecoTime)
         self.ecoTimer.setSingleShot(1)
-        if self.config[2]=="Quarter":self.ecoTimer.start(900000)
-        elif self.config[2]=="Half":self.ecoTimer.start(1800000)
+        if self.config["ecoTimeout"] == "Quarter":
+            self.ecoTimer.start(900000)
+        elif self.config["ecoTimeout"]=="Half":
+            self.ecoTimer.start(1800000)
          
         
     def timerEvent(self, event):
@@ -252,7 +256,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         
     def ecoTime(self):
         #drops the clock back to eco mode
-        self.config[0]="Eco"
+        self.config["clockType"]="Eco"
         self.setClockType()
         self.secTimer.stop()
         self.minTimer.stop()
@@ -281,7 +285,8 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         
     def config_window_closed(self, value):
      #handle config window closed custom  signals   
-        if self.config[0]!=value[0] or self.config[1!=value[1]]:
+        if self.config["clockType"] != value["clockType"] or \
+           self.config["ecoTimeout"] !=value["ecoTimeout"]:
             self.secTimer.stop()
             self.minTimer.stop()
             self.calibrateTimer.stop()
@@ -290,25 +295,25 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             self.readConfig()
             self.loadTheme()
             self.startTimers()
-        self.config[0]=value[0]
-        self.config[2]=value[2]
+        self.config["clockType"]=value["clockType"]
+        self.config["ecoTimeout"]=value["ecoTimeout"]
         self.setClockType()
         self.resetEcoTimer()
 
    
    
     def setClockType(self):
-        if self.config[0]=="Auto":
+        if self.config["clockType"]=="Auto":
             self.secTimerType=166.9
             self.secTimerBeat=1
             self.minTimerType=5000
             self.calibrateTime()
-        elif self.config[0]=="Quartz":
+        elif self.config["clockType"]=="Quartz":
             self.secTimerType=1000
             self.secTimerBeat=6
             self.minTimerType=10000
             self.calibrateTime()
-        elif self.config[0]=="Eco":
+        elif self.config["clockType"]=="Eco":
             self.secTimer.stop()
             self.calibrateTimer.stop()
             self.minTimerType=60000
@@ -345,16 +350,18 @@ class MainWindow(QMainWindow, Ui_MainWindow):
     def readConfig(self):
         #read the config file  from QSettings
         self.settings=QSettings("nclock", "nclock")
-        if self.settings.contains("clockType") == 1:
-            self.config[0]=self.settings.value("clockType").toString()
-        else:
-            self.settings.setValue("clockType", "Auto")
-        if self.settings.contains("themeName") == 1:
-            self.config[1]=self.settings.value("themeName").toString()
-        else:
-            self.settings.setValue("themeName", get_default_theme_dir())
-        if self.settings.contains("ecoTimOut") == 1:
-            self.config[2]=self.settings.value("ecoTimout").toString()
-        else: 
-            self.settings.setValue("ecoTimOut","15" )
         
+        def sd(key, default):
+            self.config[key] = val = self.settings.value(key, default).toString()
+            if not self.settings.contains(key):
+                self.settings.setValue(key, val)
+        
+        sd("themeName", "")
+        sd("clockType", "Auto")
+        sd("themeDir", get_default_theme_dir())
+        sd("ecoTimeout", "15")
+        sd("alarmBackend", "none")
+        sd("uberclockHost", "localhost:1799")
+        sd("uberclockUser", "user")
+        sd("uberclockPassword", "user")
+

@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 from PyQt4 import QtCore
 from PyQt4.QtGui import QApplication, QMessageBox
-from ui.clockstub import  MainWindow
+from ui.clock import  MainWindow
 from optparse import OptionParser
 
 # catch keyboard interrupt
