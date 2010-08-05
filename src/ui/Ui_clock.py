@@ -32,7 +32,7 @@ class Ui_MainWindow(object):
         self.layoutWidget.setObjectName("layoutWidget")
         self.horizontalLayout = QtGui.QHBoxLayout(self.layoutWidget)
         self.horizontalLayout.setObjectName("horizontalLayout")
-        self.grView = QtGui.QGraphicsView(self.layoutWidget)
+        self.grView = self.clock_class(self.layoutWidget)
         self.grView.setEnabled(True)
         sizePolicy = QtGui.QSizePolicy(QtGui.QSizePolicy.MinimumExpanding, QtGui.QSizePolicy.MinimumExpanding)
         sizePolicy.setHorizontalStretch(0)
