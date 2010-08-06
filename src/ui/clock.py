@@ -4,7 +4,7 @@
 Module implementing MainWindow.
 """
 from PyQt4.QtCore  import QSettings, SIGNAL, QBasicTimer, QTimer,QTime,  QRect, QPoint
-from PyQt4.QtGui import QMainWindow, QGraphicsScene, QTransform, QMessageBox
+from PyQt4.QtGui import QMainWindow, QGraphicsScene, QTransform, QMessageBox, QSizePolicy
 from PyQt4.QtSvg import QGraphicsSvgItem 
 from Ui_clock import Ui_MainWindow
 from config import configWindow
@@ -27,7 +27,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
     """
     Class documentation goes here.
     """
-    def __init__(self, parent = None):
+    def __init__(self, parent=None, fullscreen="AUTO"):
         """
         Constructor
         """
@@ -38,9 +38,16 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.config={}
         
         self.setupUi(self)
-        self.clock = self.grView
+        #self.clock = self.grView
+        self.clock = AnalogClock(self)
+        self.clockContainer.addWidget(self.clock)
+        #self.horizontalLayout.addWidget(self.clock)
+
         #self.setDefaults()
         self.readConfig()
+        self._update_clock()
+        if fullscreen == "AUTO":
+            self.set_fullscreen(self.settings.value("fullscreen", False).toBool())
         #self.loadTheme()
         #self.startTimers()
         #self.resetEcoTimer()
@@ -49,8 +56,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.hideOptions()
         self.configWin=configWindow(self, self.settings)
         self.connect(self.configWin, SIGNAL("window closed"), self.config_window_closed)
-        
-
+        self.connect(self.clockContainer, SIGNAL("clicked"), self.toggle_options)
         
         
     @pyqtSignature("")
@@ -67,16 +73,20 @@ class MainWindow(QMainWindow, Ui_MainWindow):
     @pyqtSignature("")
     #Sets the seconds hand to Automatic smooth style
     def on_exit_clicked(self):
+        self.saveConfig()
         self.close()
         
     def config_window_closed(self, value):
      #handle config window closed custom  signals   
         self.config["clockType"]=value["clockType"]
         self.config["ecoTimeout"]=value["ecoTimeout"]
+        self._update_clock()
+
+    def _update_clock(self):
         self.clock.setClockType(self.config["clockType"])
-        if value == "quaterly":
+        if self.config["ecoTimeout"] == "quaterly":
             timeout = 15
-        elif value == "half":
+        elif self.config["ecoTimeout"] == "half":
             timeout = 30
         else:
             timeout = 0
@@ -84,11 +94,26 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 
         
     @pyqtSignature("")
-    def on_menu_clicked(self):
+    def on_preferences_clicked(self):
         #shows the config menu
         self.hideOptions()
         self.configWin.show()
-       
+
+    @pyqtSignature("")
+    def on_fullscreen_clicked(self):
+        self.set_fullscreen(not self.isFullScreen())
+        
+    def set_fullscreen(self, do):
+        if do:
+            self.config["zoom"] = self.clock.getZoom()
+            self.showFullScreen()
+            self.clock.setZoom(self.config.get("zoomFullscreen", None))
+        else:
+            self.config["zoomFullscreen"] = self.clock.getZoom()
+            self.showNormal()
+            self.clock.setZoom(self.config.get("zoom", None))
+        self.saveConfig()
+
     def hideOptions(self):
         #shows the config menu
         self.optionsFrame.hide()
@@ -99,7 +124,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.optionsFrame.show()
         self.fullScreen=1
         
-    def mousePressEvent(self, event):
+    def toggle_options(self, event):
         #Reimplenents QMainWindow's mouse press event handler
         self.mousePressPos = QPoint()
         if self.fullScreen == 0:
@@ -107,13 +132,21 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         else:
             self.hideOptions()
         event.accept()
-        
+
+    def saveConfig(self):
+        if self.config.get("zoom", None):
+            self.settings.setValue("zoom", self.config["zoom"])
+        if self.config.get("zoomFullscreen", None):
+            self.settings.setValue("zoomFullscreen", self.config["zoomFullscreen"])
+        self.settings.setValue("fullscreen", self.isFullScreen())
+        self.settings.sync()
+
     def readConfig(self):
         #read the config file  from QSettings
         self.settings=QSettings("nclock", "nclock")
         
         def sd(key, default):
-            self.config[key] = val = self.settings.value(key, default).toString()
+            self.config[key] = val = unicode(self.settings.value(key, default).toString())
             if not self.settings.contains(key):
                 self.settings.setValue(key, val)
         
@@ -125,4 +158,12 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         sd("uberclockHost", "localhost:1799")
         sd("uberclockUser", "user")
         sd("uberclockPassword", "user")
+ 
+        rv = self.settings.value("zoom", None).toFloat()
+        if rv[1]:
+            self.config["zoom"] = rv[0]
+
+        rv = self.settings.value("zoomFullscreen", None).toFloat()
+        if rv[1]:
+            self.config["zoomFullscreen"] = rv[0]
 

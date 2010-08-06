@@ -3,8 +3,8 @@
 """
 Module implementing MainWindow.
 """
-from PyQt4.QtCore  import QSettings, SIGNAL, QBasicTimer, QTimer,QTime,  QRect, QPoint
-from PyQt4.QtGui import QMainWindow, QGraphicsScene, QTransform, QWidget, QGraphicsView
+from PyQt4.QtCore  import QSettings, SIGNAL, QBasicTimer, QTimer,QTime,  QRect, QPoint, Qt
+from PyQt4.QtGui import QMainWindow, QBrush, QPalette, QGraphicsScene, QTransform, QWidget, QGraphicsView, QFrame
 from PyQt4.QtSvg import QGraphicsSvgItem 
 from Ui_clock import Ui_MainWindow
 from config import configWindow
@@ -26,7 +26,19 @@ class AnalogClock(QGraphicsView):
         Constructor
         """
         QGraphicsView.__init__(self, parent)
+        self.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
+        self.setVerticalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
+        #self.setAutoFillBackground(True)
+        #pal = self.palette();
+        #br = QBrush(Qt.NoBrush)
+        #pal.setBrush(QPalette.Background, br);
+        #self.setPalette(pal);
+        #self.setBackgroundBrush(br)
+        # is the only thing seems to work to get the background transparent
+        self.setStyleSheet("background-color: rgba(0, 0, 0, 0%);")
+        self.setFrameShape(QFrame.NoFrame)
 
+        #   self.setBackgroundOrigin( BackgroundOrigin background )
         self._static = static
         self.setDefaults()
         
@@ -185,8 +197,7 @@ class AnalogClock(QGraphicsView):
        
         #Scale the Clock to full screen and show whole clock
         self.resetTransform()
-        scaleFactor=480/self.sceneHeight
-        self.scale(scaleFactor, scaleFactor)
+        self.setZoom(None)
         self.setScene(self.scene)
         
     def startTimers(self): 
@@ -196,11 +207,13 @@ class AnalogClock(QGraphicsView):
         self.secTimer.start(self.secTimerType, self)
         #set up the Qt Minute Timer every 5 secs for Auto,10 seconds for Quartz,60 secs for Eco
         if self.clockMode == self.ECO:
+                self.svgSecond.setOpacity(0.0)
                 self.connect(self.syncTimer, SIGNAL("timeout()"), self.startMin)
                 self.time = QTime.currentTime()
                 self.syncTimer.setSingleShot(1)
                 self.syncTimer.start((60-self.time.second())*1000)
         else : 
+                self.svgSecond.setOpacity(1.0)
                 self.connect(self.minTimer, SIGNAL("timeout()"), self.showTime)
                 self.minTimer.start(self.minTimerType)
         #set up the recalibrate timer every 10Secs
@@ -268,12 +281,22 @@ class AnalogClock(QGraphicsView):
     @pyqtSignature("")
     #Sets the seconds hand to Automatic smooth style
     def zoomIn(self):
+        #print 
         self.scale(1.05, 1.05)
     
     @pyqtSignature("")
     #Sets the seconds hand to Automatic smooth style
     def zoomOut(self):
         self.scale(0.95, 0.95)
+
+    def setZoom(self, zoom):
+        self.resetTransform()
+        if not zoom:
+            zoom=480/self.sceneHeight
+        self.scale(zoom, zoom)
+
+    def getZoom(self):
+        return self.transform().m11()
 
     def setEcoTimeout(self, timer):
         self.ecoTimeout = timer
@@ -284,31 +307,33 @@ class AnalogClock(QGraphicsView):
         Set the clock mode of type AUTO, QUARTZ, ECO
         """
 
-        print "settype", mode
         if mode is None:
             mode = self.clockMode
 
         if mode == self.QUARTZ or \
-           (isinstance(mode, str) and mode.lower() == "quartz"):
+           (isinstance(mode, (str, unicode)) and mode.lower() == "quartz"):
             self.clockMode = self.QUARTZ
             self.secTimerType=1000
             self.secTimerBeat=6
             self.minTimerType=10000
             self.calibrateTime()
+            self.svgSecond.setOpacity(1.0)
         elif mode == self.ECO or \
-            (isinstance(mode, str) and mode.lower() == "eco"):
+            (isinstance(mode, (str, unicode)) and mode.lower() == "eco"):
             self.clockMode = self.ECO
             self.secTimer.stop()
             self.calibrateTimer.stop()
             self.minTimerType=60000
             self.svgSecond.resetTransform()
             self.svgSecond.setTransform(QTransform().translate(self.ixoffset, self.iyoffset).rotate(-90).translate(self.xoffset, self.yoffset))
+            self.svgSecond.setOpacity(0.0)
         else:
             self.clockMode = self.AUTO
             self.secTimerType=166.9
             self.secTimerBeat=1
             self.minTimerType=5000
             self.calibrateTime()
+            self.svgSecond.setOpacity(1.0)
 
         self.resetEcoTimer()
         self.minTimer.stop()
