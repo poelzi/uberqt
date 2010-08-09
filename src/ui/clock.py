@@ -3,25 +3,25 @@
 """
 Module implementing MainWindow.
 """
-from PyQt4.QtCore  import QSettings, SIGNAL, QBasicTimer, QTimer,QTime,  QRect, QPoint
-from PyQt4.QtGui import QMainWindow, QGraphicsScene, QTransform, QMessageBox, QSizePolicy
+from PyQt4.QtCore  import QSettings, Qt, QAbstractListModel, QModelIndex, QVariant, SIGNAL, QBasicTimer, QTimer,QTime,  QRect, QPoint
+from PyQt4.QtGui import QMainWindow, QSpinBox, QGraphicsScene, QTransform, QMessageBox, QSizePolicy, QListWidgetItem
 from PyQt4.QtSvg import QGraphicsSvgItem 
 from Ui_clock import Ui_MainWindow
 from config import configWindow
 from PyQt4.QtCore import pyqtSignature
+from __init__ import get_default_theme_dir
 
 from .analog import AnalogClock
 
 import os.path
 
-def get_default_theme_dir():
-    import platform
-    import re
-    # it is actually the hostname, but it should match normally :-)
-    if re.match("Nokia-N[0-9]{3}.*", platform.node()):
-        return os.path.join(os.path.expanduser("~"), "MyDocs", "Nclocktheme")
-    # default linux path
-    return os.path.join(os.path.expanduser("~"), ".config", "nclock", "themes")
+class ThemesItem(QListWidgetItem):
+    def __init__(self, path, name, **kwargs):
+        self.path = path
+        self.name = name
+        super(ThemesItem, self).__init__(name, **kwargs)
+
+
 
 class MainWindow(QMainWindow, Ui_MainWindow):
     """
@@ -35,17 +35,30 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         
         self.clock_class = AnalogClock
 
+        self.fullScreen=0
+
+        self.settings=QSettings("uberclock", "uberqt")
         self.config={}
-        
+
         self.setupUi(self)
+
+
+        self.configWin=configWindow(self, self.settings, self.config)
+        
+        #self.model = MyListModel([1,2,3], self)
+        #self.listThemes.setModel(self.model)
+        #self.listThemes.setIndexWidget (self, QModelIndex index, QWidget widget)
+        
         #self.clock = self.grView
-        self.clock = AnalogClock(self)
-        self.clockContainer.addWidget(self.clock)
+        #self.tools.setCurrentIndex(1)
         #self.horizontalLayout.addWidget(self.clock)
 
         #self.setDefaults()
-        self.readConfig()
-        self._update_clock()
+        #self.readConfig()
+        self.updateBG()
+        self.clock.updateClock(self.config)
+
+        self.update_themes_list(True)
         if fullscreen == "AUTO":
             self.set_fullscreen(self.settings.value("fullscreen", False).toBool())
         #self.loadTheme()
@@ -54,9 +67,8 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         #self.setClockType()
   
         self.hideOptions()
-        self.configWin=configWindow(self, self.settings)
         self.connect(self.configWin, SIGNAL("window closed"), self.config_window_closed)
-        self.connect(self.clockContainer, SIGNAL("clicked"), self.toggle_options)
+        self.connect(self.clock, SIGNAL("clicked"), self.toggle_options)
         
         
     @pyqtSignature("")
@@ -74,25 +86,21 @@ class MainWindow(QMainWindow, Ui_MainWindow):
     #Sets the seconds hand to Automatic smooth style
     def on_exit_clicked(self):
         self.saveConfig()
+        self.configWin.writeConfig()
         self.close()
-        
+
+    def closeEvent(self, *args, **kwargs):
+        self.on_exit_clicked()
+        super(MainWindow, self).closeEvent(*args, **kwargs)
+
     def config_window_closed(self, value):
      #handle config window closed custom  signals   
-        self.config["clockType"]=value["clockType"]
-        self.config["ecoTimeout"]=value["ecoTimeout"]
-        self._update_clock()
+        #self.config["clockType"]=value["clockType"]
+        #self.config["ecoTimeout"]=value["ecoTimeout"]
+        #self.config["backgroundPath"]=value["backgroundPath"]
+        self.updateBG()
+        self.clock.updateClock(self.config)
 
-    def _update_clock(self):
-        self.clock.setClockType(self.config["clockType"])
-        if self.config["ecoTimeout"] == "quaterly":
-            timeout = 15
-        elif self.config["ecoTimeout"] == "half":
-            timeout = 30
-        else:
-            timeout = 0
-        self.clock.setEcoTimeout(timeout)
-
-        
     @pyqtSignature("")
     def on_preferences_clicked(self):
         #shows the config menu
@@ -102,7 +110,33 @@ class MainWindow(QMainWindow, Ui_MainWindow):
     @pyqtSignature("")
     def on_fullscreen_clicked(self):
         self.set_fullscreen(not self.isFullScreen())
-        
+
+    def update_themes_list(self, load_theme=False):
+        self.listThemes.clear()
+        # add default items
+        pt = os.path.join(os.path.dirname(__file__), os.path.pardir, "theme")
+        self.listThemes.addItem(ThemesItem(pt, "default: analog"))
+
+        # add real entries
+        pt = os.path.expanduser(self.config["themePath"])
+        try:
+            for entry in os.listdir(pt):
+                item = ThemesItem(os.path.join(pt, entry), entry)
+                self.listThemes.addItem(item)
+                if self.config["themeName"] == entry:
+                    self.listThemes.setItemSelected(item, True)
+                    if load_theme:
+                        self.clock.loadTheme(os.path.join(pt, entry))
+        except OSError:
+            pass
+
+    @pyqtSignature("(QListWidgetItem)")
+    def on_listThemes_itemactivated(self, item, **kwargs):
+        #shows the config menu
+        self.clock.loadTheme(item.path)
+        self.config["themeName"] = item.name
+
+
     def set_fullscreen(self, do):
         if do:
             self.config["zoom"] = self.clock.getZoom()
@@ -133,6 +167,18 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             self.hideOptions()
         event.accept()
 
+    def updateBG(self):
+        if self.config.get("backgroundPath", None):
+            self.centralwidget.setStyleSheet("QWidget#centralwidget {\n"
+"    background-image: url(%s);\n"
+"}" %self.config["backgroundPath"])
+        else:
+            self.centralwidget.setStyleSheet("QWidget#centralwidget {\n"
+"    background-image: url(:/background/theme/background.svg);\n"
+"    background-color: qradialgradient(spread:pad, cx:0.48, cy:0.533884, radius:0.597, fx:0.237, fy:0.213029, stop:0.14375 rgba(2, 28, 72, 255), stop:0.638535 rgba(1, 13, 34, 255), stop:1 rgba(0, 0, 0, 255))\n"
+"}")
+
+
     def saveConfig(self):
         if self.config.get("zoom", None):
             self.settings.setValue("zoom", self.config["zoom"])
@@ -140,30 +186,4 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             self.settings.setValue("zoomFullscreen", self.config["zoomFullscreen"])
         self.settings.setValue("fullscreen", self.isFullScreen())
         self.settings.sync()
-
-    def readConfig(self):
-        #read the config file  from QSettings
-        self.settings=QSettings("nclock", "nclock")
-        
-        def sd(key, default):
-            self.config[key] = val = unicode(self.settings.value(key, default).toString())
-            if not self.settings.contains(key):
-                self.settings.setValue(key, val)
-        
-        sd("themeName", "")
-        sd("clockType", "Auto")
-        sd("themeDir", get_default_theme_dir())
-        sd("ecoTimeout", "15")
-        sd("alarmBackend", "none")
-        sd("uberclockHost", "localhost:1799")
-        sd("uberclockUser", "user")
-        sd("uberclockPassword", "user")
- 
-        rv = self.settings.value("zoom", None).toFloat()
-        if rv[1]:
-            self.config["zoom"] = rv[0]
-
-        rv = self.settings.value("zoomFullscreen", None).toFloat()
-        if rv[1]:
-            self.config["zoomFullscreen"] = rv[0]
 

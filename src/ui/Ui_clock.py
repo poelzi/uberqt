@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'src/ui/clock.ui'
 #
-# Created: Fri Aug  6 04:42:30 2010
+# Created: Mon Aug  9 16:17:45 2010
 #      by: PyQt4 UI code generator 4.7.2
 #
 # WARNING! All changes made in this file will be lost!
@@ -23,14 +23,14 @@ class Ui_MainWindow(object):
         self.horizontalLayout_2.setObjectName("horizontalLayout_2")
         self.horizontalLayout = QtGui.QHBoxLayout()
         self.horizontalLayout.setObjectName("horizontalLayout")
-        self.clockContainer = ClockContainer(self.centralwidget)
+        self.clock = ClockContainer(self.centralwidget)
         sizePolicy = QtGui.QSizePolicy(QtGui.QSizePolicy.Expanding, QtGui.QSizePolicy.Expanding)
         sizePolicy.setHorizontalStretch(0)
         sizePolicy.setVerticalStretch(0)
-        sizePolicy.setHeightForWidth(self.clockContainer.sizePolicy().hasHeightForWidth())
-        self.clockContainer.setSizePolicy(sizePolicy)
-        self.clockContainer.setObjectName("clockContainer")
-        self.horizontalLayout.addWidget(self.clockContainer)
+        sizePolicy.setHeightForWidth(self.clock.sizePolicy().hasHeightForWidth())
+        self.clock.setSizePolicy(sizePolicy)
+        self.clock.setObjectName("clock")
+        self.horizontalLayout.addWidget(self.clock)
         self.optionsFrame = QtGui.QFrame(self.centralwidget)
         sizePolicy = QtGui.QSizePolicy(QtGui.QSizePolicy.Preferred, QtGui.QSizePolicy.Preferred)
         sizePolicy.setHorizontalStretch(1)
@@ -77,9 +77,9 @@ class Ui_MainWindow(object):
         self.boxAlarm.setObjectName("boxAlarm")
         self.verticalLayout_2 = QtGui.QVBoxLayout(self.boxAlarm)
         self.verticalLayout_2.setObjectName("verticalLayout_2")
-        self.listView = QtGui.QListView(self.boxAlarm)
-        self.listView.setObjectName("listView")
-        self.verticalLayout_2.addWidget(self.listView)
+        self.ucList = QtGui.QListView(self.boxAlarm)
+        self.ucList.setObjectName("ucList")
+        self.verticalLayout_2.addWidget(self.ucList)
         self.horizontalLayout_4 = QtGui.QHBoxLayout()
         self.horizontalLayout_4.setMargin(5)
         self.horizontalLayout_4.setObjectName("horizontalLayout_4")
@@ -123,6 +123,11 @@ class Ui_MainWindow(object):
         self.boxThemes = QtGui.QWidget()
         self.boxThemes.setGeometry(QtCore.QRect(0, 0, 374, 356))
         self.boxThemes.setObjectName("boxThemes")
+        self.horizontalLayout_5 = QtGui.QHBoxLayout(self.boxThemes)
+        self.horizontalLayout_5.setObjectName("horizontalLayout_5")
+        self.listThemes = QtGui.QListWidget(self.boxThemes)
+        self.listThemes.setObjectName("listThemes")
+        self.horizontalLayout_5.addWidget(self.listThemes)
         self.tools.addItem(self.boxThemes, "")
         self.verticalLayout.addWidget(self.tools)
         self.preferences = QtGui.QPushButton(self.optionsFrame)
@@ -134,10 +139,12 @@ class Ui_MainWindow(object):
         MainWindow.setCentralWidget(self.centralwidget)
 
         self.retranslateUi(MainWindow)
+        self.tools.setCurrentIndex(0)
+        QtCore.QObject.connect(self.listThemes, QtCore.SIGNAL("itemActivated(QListWidgetItem*)"), MainWindow.on_listThemes_itemactivated)
         QtCore.QMetaObject.connectSlotsByName(MainWindow)
 
     def retranslateUi(self, MainWindow):
-        MainWindow.setWindowTitle(QtGui.QApplication.translate("MainWindow", "uberqt", None, QtGui.QApplication.UnicodeUTF8))
+        MainWindow.setWindowTitle(QtGui.QApplication.translate("MainWindow", "UberQT", None, QtGui.QApplication.UnicodeUTF8))
         self.exit.setText(QtGui.QApplication.translate("MainWindow", "Quit", None, QtGui.QApplication.UnicodeUTF8))
         self.fullscreen.setText(QtGui.QApplication.translate("MainWindow", "Fullscreen", None, QtGui.QApplication.UnicodeUTF8))
         self.zoomIn.setText(QtGui.QApplication.translate("MainWindow", "Zoom In", None, QtGui.QApplication.UnicodeUTF8))

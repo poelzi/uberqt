@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'src/ui/config.ui'
 #
-# Created: Wed Aug  4 22:02:31 2010
+# Created: Mon Aug  9 14:51:50 2010
 #      by: PyQt4 UI code generator 4.7.2
 #
 # WARNING! All changes made in this file will be lost!
@@ -70,6 +70,7 @@ class Ui_configWindow(object):
         self.horizontalLayout_2 = QtGui.QHBoxLayout()
         self.horizontalLayout_2.setObjectName("horizontalLayout_2")
         self.dirLabel = QtGui.QLabel(self.general)
+        self.dirLabel.setMinimumSize(QtCore.QSize(150, 0))
         self.dirLabel.setObjectName("dirLabel")
         self.horizontalLayout_2.addWidget(self.dirLabel)
         self.dirInput = QtGui.QLineEdit(self.general)
@@ -80,6 +81,20 @@ class Ui_configWindow(object):
         self.loadButton.setObjectName("loadButton")
         self.horizontalLayout_2.addWidget(self.loadButton)
         self.verticalLayout_3.addLayout(self.horizontalLayout_2)
+        self.horizontalLayout_6 = QtGui.QHBoxLayout()
+        self.horizontalLayout_6.setObjectName("horizontalLayout_6")
+        self.bgLabel = QtGui.QLabel(self.general)
+        self.bgLabel.setMinimumSize(QtCore.QSize(150, 0))
+        self.bgLabel.setObjectName("bgLabel")
+        self.horizontalLayout_6.addWidget(self.bgLabel)
+        self.bgInput = QtGui.QLineEdit(self.general)
+        self.bgInput.setObjectName("bgInput")
+        self.horizontalLayout_6.addWidget(self.bgInput)
+        self.bgButton = QtGui.QPushButton(self.general)
+        self.bgButton.setFlat(False)
+        self.bgButton.setObjectName("bgButton")
+        self.horizontalLayout_6.addWidget(self.bgButton)
+        self.verticalLayout_3.addLayout(self.horizontalLayout_6)
         self.tabWidget.addTab(self.general, "")
         self.alarm = QtGui.QWidget()
         self.alarm.setObjectName("alarm")
@@ -162,6 +177,8 @@ class Ui_configWindow(object):
         self.halfButton.setText(QtGui.QApplication.translate("configWindow", "Eco after 30 minutes", None, QtGui.QApplication.UnicodeUTF8))
         self.dirLabel.setText(QtGui.QApplication.translate("configWindow", "Theme Directory", None, QtGui.QApplication.UnicodeUTF8))
         self.loadButton.setText(QtGui.QApplication.translate("configWindow", "Browse", None, QtGui.QApplication.UnicodeUTF8))
+        self.bgLabel.setText(QtGui.QApplication.translate("configWindow", "Background Image", None, QtGui.QApplication.UnicodeUTF8))
+        self.bgButton.setText(QtGui.QApplication.translate("configWindow", "Browse", None, QtGui.QApplication.UnicodeUTF8))
         self.tabWidget.setTabText(self.tabWidget.indexOf(self.general), QtGui.QApplication.translate("configWindow", "General", None, QtGui.QApplication.UnicodeUTF8))
         self.label.setText(QtGui.QApplication.translate("configWindow", "Backend", None, QtGui.QApplication.UnicodeUTF8))
         self.alarmSelect.setItemText(0, QtGui.QApplication.translate("configWindow", "Disabled", None, QtGui.QApplication.UnicodeUTF8))

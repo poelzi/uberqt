@@ -11,7 +11,7 @@
    </rect>
   </property>
   <property name="windowTitle">
-   <string>uberqt</string>
+   <string>UberQT</string>
   </property>
   <widget class="QWidget" name="centralwidget">
    <property name="styleSheet">
@@ -24,7 +24,7 @@
     <item>
      <layout class="QHBoxLayout" name="horizontalLayout" stretch="1,0">
       <item>
-       <widget class="ClockContainer" name="clockContainer" native="true">
+       <widget class="ClockContainer" name="clock" native="true">
         <property name="sizePolicy">
          <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
           <horstretch>0</horstretch>
@@ -97,6 +97,9 @@
              <verstretch>0</verstretch>
             </sizepolicy>
            </property>
+           <property name="currentIndex">
+            <number>0</number>
+           </property>
            <widget class="QWidget" name="boxAlarm">
             <property name="geometry">
              <rect>
@@ -117,7 +120,7 @@
             </attribute>
             <layout class="QVBoxLayout" name="verticalLayout_2">
              <item>
-              <widget class="QListView" name="listView"/>
+              <widget class="QListView" name="ucList"/>
              </item>
              <item>
               <layout class="QHBoxLayout" name="horizontalLayout_4" stretch="0,0,0">
@@ -205,6 +208,11 @@
             <attribute name="label">
              <string>Theme</string>
             </attribute>
+            <layout class="QHBoxLayout" name="horizontalLayout_5">
+             <item>
+              <widget class="QListWidget" name="listThemes"/>
+             </item>
+            </layout>
            </widget>
           </widget>
          </item>
@@ -237,5 +245,25 @@
  <resources>
   <include location="../clock.qrc"/>
  </resources>
- <connections/>
+ <connections>
+  <connection>
+   <sender>listThemes</sender>
+   <signal>itemActivated(QListWidgetItem*)</signal>
+   <receiver>MainWindow</receiver>
+   <slot>on_listThemes_itemactivated()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>597</x>
+     <y>371</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>399</x>
+     <y>299</y>
+    </hint>
+   </hints>
+  </connection>
+ </connections>
+ <slots>
+  <slot>on_listThemes_itemactivated()</slot>
+ </slots>
 </ui>

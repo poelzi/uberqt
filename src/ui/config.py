@@ -7,6 +7,7 @@ Module implementing configWindow.
 from PyQt4.QtGui import QMainWindow, QFileDialog, QMessageBox, QProgressBar
 from PyQt4.QtCore import pyqtSignature, SIGNAL, QSettings, Qt
 from Ui_config import Ui_configWindow
+from __init__ import get_default_theme_dir
 
 class configWindow(QMainWindow, Ui_configWindow):
     """
@@ -15,7 +16,7 @@ class configWindow(QMainWindow, Ui_configWindow):
     ALARM_BACKENDS = {0: False, 1: "uberclock"}
     
     
-    def __init__(self, parent = None, settings=None):
+    def __init__(self, parent = None, settings=None, config=None):
         """
         Constructor
         """
@@ -26,17 +27,46 @@ class configWindow(QMainWindow, Ui_configWindow):
         #The the timeoutfactor for eco mode
         #elf.config=["Auto","/home/user/MyDocs", "15"]
         #read the config file  from QSettings
-        self.config = {}
+        if config is not None:
+            self.config = config
+        else:
+            self.config = {}
 
         if settings:
             self.settings = settings
         else:
-            self.settings=QSettings("nclock", "nclock")
+            self.settings=QSettings("uberclock", "uberqt")
 
         self.readConfig()
     
     def readConfig(self):
-        self.config["clockType"] = ct = self.settings.value("clockType", "Auto").toString()
+        """Read config file and updates internal config dict"""
+
+        def sd(key, default):
+            self.config[key] = val = unicode(self.settings.value(key, default).toString())
+            if not self.settings.contains(key):
+                self.settings.setValue(key, val)
+            return val
+        
+        sd("themeName", "")
+        sd("backgroundPath", "")
+        ct = sd("clockType", "Auto")
+        sd("themePath", get_default_theme_dir())
+        et = sd("ecoTimeout", "15")
+        sd("alarmBackend", "none")
+        sd("uberclockHost", "localhost:1799")
+        sd("uberclockUser", "user")
+        sd("uberclockPassword", "user")
+ 
+        rv = self.settings.value("zoom", None).toFloat()
+        if rv[1]:
+            self.config["zoom"] = rv[0]
+
+        rv = self.settings.value("zoomFullscreen", None).toFloat()
+        if rv[1]:
+            self.config["zoomFullscreen"] = rv[0]
+
+
         if ct == "Quartz":
             self.quartzButton.setChecked(1)
         elif ct == "Eco":
@@ -45,27 +75,24 @@ class configWindow(QMainWindow, Ui_configWindow):
             # auto is default
             self.autoButton.setChecked(1)
 
-        self.config["ecoTimeout"] = ct = self.settings.value("ecoTimeout", "Selected").toString()
-        if ct == "Quarter":
+        if et == "Quarter":
             self.quarterButton.setChecked(1)
-        elif ct == "Half":
+        elif et == "Half":
             self.halfButton.setChecked(1)
         else:
             # auto is default
             self.selectedButton.setChecked(1)
 
-        self.dirInput.setText(self.settings.value("themePath", "").toString())
+        self.dirInput.setText(self.config["themePath"])
+        self.bgInput.setText(self.config["backgroundPath"])
 
         # fill uberclock
-        self.config["uberclockHost"] = va = self.settings.value("uberclockHost", "").toString()
-        self.uberclockHost.setText(va)
-        self.config["uberclockUser"] = va = self.settings.value("uberclockUser", "").toString()
-        self.uberclockUser.setText(va)
-        self.config["uberclockPassword"] = va = self.settings.value("uberclockPassword", "").toString()
-        self.uberclockPassword.setText(va)
+        self.uberclockHost.setText(self.config["uberclockHost"])
+        self.uberclockUser.setText(self.config["uberclockUser"])
+        self.uberclockPassword.setText(self.config["uberclockPassword"])
 
         # set backend
-        self.config["alarmBackend"] = backend = self.settings.value("alarmBackend", "").toString()
+        backend = self.config["alarmBackend"]
         for key, val in self.ALARM_BACKENDS.iteritems():
             if val == backend:
                 self.alarmSelect.setCurrentIndex(key)
@@ -81,7 +108,10 @@ class configWindow(QMainWindow, Ui_configWindow):
         #self.settings=QSettings("AcaciaClose", "ncalc")
         self.settings.setValue("clockType", self.config["clockType"])
         self.settings.setValue("themePath", self.dirInput.text())
+        self.settings.setValue("themeName", self.config["themeName"])
         self.settings.setValue("ecoTimeout",self.config["ecoTimeout"])
+
+        self.settings.setValue("backgroundPath", self.bgInput.text())
 
         self.settings.setValue("uberclockHost",self.uberclockHost.text())
         self.settings.setValue("uberclockUser",self.uberclockUser.text())
@@ -96,6 +126,8 @@ class configWindow(QMainWindow, Ui_configWindow):
 
     def closeEvent(self, event):
         #emit custom signal and pass the clocktype and eco mode back
+        self.config["backgroundPath"] = self.bgInput.text()
+        self.config["themePath"] = self.dirInput.text()
         self.writeConfig()
         self.emit(SIGNAL("window closed"), self.config)
         event.accept()
@@ -134,26 +166,33 @@ class configWindow(QMainWindow, Ui_configWindow):
         self.config["alarmBackend"] = self.ALARM_BACKENDS[index]
 
 
-        
-    def getClockType(self):
-        #print self.config[0]
-        return self.config[0]
-        
-    
-         
-        
     @pyqtSignature("")
-    def on_loadButton_clicked(self):
+    def on_dirButton_clicked(self):
          #sets the user theme
          self.fileDialog=QFileDialog(self)
          #self.fileDialog.setReadOnly(1)
          #self.setCursor(Qt.WaitCursor)
-         self.loadButton.setText("Busy...")
-         path=self.fileDialog.getExistingDirectory(self, "Open Directory",self.config["themePath"])
-         self.loadButton.setText("Browse")
+         self.dirButton.setText("Busy...")
+         path=self.fileDialog.getExistingDirectory(self, "Open Directory",self.config.get("themePath", get_default_theme_dir()))
+         self.dirButton.setText("Browse")
          #self.setCursor(Qt.ArrowCursor)
          self.dirInput.setText(path)
+         self.config["themePath"] = path
         
+
+    @pyqtSignature("")
+    def on_bgButton_clicked(self):
+         #sets the user theme
+         self.fileDialog=QFileDialog(self)
+         #self.fileDialog.setReadOnly(1)
+         #self.setCursor(Qt.WaitCursor)
+         self.bgButton.setText("Busy...")
+         path=self.fileDialog.getOpenFileName(self, "Open Directory",self.config.get("backgroundPath", ""),
+                                              self.tr("Images (*)"))
+         self.bgButton.setText("Browse")
+         #self.setCursor(Qt.ArrowCursor)
+         self.bgInput.setText(path)
+         self.config["backgroundPath"] = path
 
 
 
